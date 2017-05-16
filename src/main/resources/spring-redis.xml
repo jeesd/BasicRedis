@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p"   
+	xmlns:c="http://www.springframework.org/schema/c"   
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans  
+                        http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+                        http://www.springframework.org/schema/context  
+                        http://www.springframework.org/schema/context/spring-context-4.0.xsd">
+     
+     <!-- scanner redis properties -->
+     <context:property-placeholder location="classpath:redis.properties" />
+
+	 <!-- 对象池配置 -->
+    <bean id="jedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig">  
+        <property name="maxTotal" value="${redis.pool.maxTotal}"/> <!-- 控制一个pool可分配多少个jedis实例 -->  
+        <property name="maxIdle" value="${redis.pool.maxIdle}" />   <!-- 控制一个pool最多有多少个状态为idle(空闲)的jedis实例 -->  
+        <property name="minIdle" value="${redis.pool.minIdle}"/>
+        <property name="maxWaitMillis" value="${redis.pool.maxWaitMillis}" />  <!-- 表示当borrow一个jedis实例时，最大的等待时间，如果超过等待时间，则直接抛出JedisConnectionException --> 
+        <property name="minEvictableIdleTimeMillis" value="${redis.pool.minEvictableIdleTimeMillis}"></property>  
+        <property name="numTestsPerEvictionRun" value="100"></property>  
+        <property name="timeBetweenEvictionRunsMillis" value="${redis.pool.timeBetweenEvictionRunsMillis}"></property>   
+        <property name="testOnBorrow" value="${redis.pool.testOnBorrow}" /> <!-- 在borrow一个jedis实例时，是否提前进行validate操作；如果为true，则得到的jedis实例均是可用的 -->  
+        <property name="testOnReturn" value="${redis.pool.testOnReturn}"/>
+         <property name="testWhileIdle" value="${redis.pool.testWhileIdle}"/>
+    </bean>
+    
+    <!-- 工厂实现 -->
+    <bean id="jedisPool" class="redis.clients.jedis.JedisPool">
+        <constructor-arg name="poolConfig" ref="jedisPoolConfig" />
+        <constructor-arg name="host" value="${redis.hostName}" />
+        <constructor-arg name="port" value="${redis.port}" type="int" />
+        <constructor-arg name="timeout" value="${redis.timeout}" type="int" />
+        <constructor-arg name="password" value="#{'${redis.password}'!=''?'${redis.password}':null}" />
+        <constructor-arg name="database" value="${redis.database}" type="int" />
+    </bean>
+    
+</beans>
